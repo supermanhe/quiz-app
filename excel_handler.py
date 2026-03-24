@@ -48,6 +48,9 @@ def import_from_excel(filepath: str) -> List[Dict]:
         
     Returns:
         题目列表
+        
+    Raises:
+        ValueError: 数据格式错误，包含具体行号和错误信息
     """
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"文件不存在: {filepath}")
@@ -56,8 +59,11 @@ def import_from_excel(filepath: str) -> List[Dict]:
     ws = wb.active
     
     questions = []
+    row_num = 1  # 用于错误提示
     
     for row in ws.iter_rows(min_row=2, values_only=True):  # 跳过表头
+        row_num += 1
+        
         if len(row) < 10 or row[0] is None:
             continue
         
@@ -90,6 +96,21 @@ def import_from_excel(filepath: str) -> List[Dict]:
                 q_type = 'multiple'
             elif q_type in ['判断', '判断题', 'judge']:
                 q_type = 'judge'
+            else:
+                # 无法识别的题型，尝试自动检测
+                q_type = detect_question_type(question_text, options[2], options[3])
+        
+        # 确保题型不为空
+        if not q_type:
+            raise ValueError(f"第 {row_num} 行：无法识别题型，请检查B列是否填写正确（single/multiple/judge 或 单选/多选/判断）")
+        
+        # 确保题干不为空
+        if not question_text.strip():
+            raise ValueError(f"第 {row_num} 行：题干（C列）不能为空")
+        
+        # 确保答案不为空
+        if not answer:
+            raise ValueError(f"第 {row_num} 行：答案（J列）不能为空")
         
         # 如果是判断题且没有选项，添加默认选项
         if q_type == 'judge':

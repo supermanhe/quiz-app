@@ -735,8 +735,11 @@ class QuizApp:
             
             messagebox.showinfo("成功", f"成功导入 {len(questions)} 道题目")
             
+        except ValueError as e:
+            # 数据格式错误，显示详细的行号信息
+            messagebox.showerror("导入失败", f"Excel格式错误：\n\n{str(e)}\n\n请检查：\n1. B列（题型）填写正确：single/multiple/judge 或 单选/多选/判断\n2. C列（题干）不能为空\n3. J列（答案）不能为空")
         except Exception as e:
-            messagebox.showerror("错误", f"导入失败：{str(e)}")
+            messagebox.showerror("导入失败", f"导入失败：{str(e)}")
     
     def create_new_save(self):
         """创建新存档"""
