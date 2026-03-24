@@ -364,7 +364,7 @@ class QuizApp:
         self.answer_label.config(text="")
         
         # 更新题目信息
-        type_name = TYPE_NAMES.get(q['type'], q['type'])
+        type_name = TYPE_NAMES.get(q.get('q_type'), q.get('q_type', '未知'))
         status = ""
         if q.get('is_answered'):
             status = " ✓" if q.get('is_correct') else " ✗"
@@ -426,7 +426,7 @@ class QuizApp:
             self.confirm_btn.pack_forget()
         else:
             # 未答的题目，多选题显示确认按钮
-            if q['type'] == 'multiple':
+            if q.get('q_type') == 'multiple':
                 self.confirm_btn.pack(pady=(10, 0))
             else:
                 self.confirm_btn.pack_forget()
@@ -450,7 +450,7 @@ class QuizApp:
         if q.get('is_answered'):
             return
         
-        if q['type'] == 'multiple':
+        if q.get('q_type') == 'multiple':
             # 多选题：允许多选，需要确认
             if self.option_vars[idx].get():
                 if option_char not in self.selected_options:
