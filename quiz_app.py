@@ -7,11 +7,29 @@ from tkinter import ttk, messagebox, filedialog, simpledialog
 import os
 import sys
 import time
+import traceback
+from datetime import datetime
 from typing import Optional, List, Dict
 import threading
 
 from database import QuizDatabase, list_saves, delete_save
 from excel_handler import import_from_excel, export_to_excel, create_sample_excel
+
+# 设置日志文件路径
+LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "debug.log")
+
+def log_error(msg):
+    """记录错误到日志文件"""
+    try:
+        with open(LOG_FILE, 'a', encoding='utf-8') as f:
+            f.write(f"[{datetime.now()}] {msg}\n")
+    except:
+        pass
+
+def log_exception(e):
+    """记录异常详细信息到日志文件"""
+    error_detail = traceback.format_exc()
+    log_error(f"异常: {e}\n{error_detail}")
 
 # 版本信息
 VERSION = "1.0.0"
@@ -737,9 +755,13 @@ class QuizApp:
             
         except ValueError as e:
             # 数据格式错误，显示详细的行号信息
-            messagebox.showerror("导入失败", f"Excel格式错误：\n\n{str(e)}\n\n请检查：\n1. B列（题型）填写正确：single/multiple/judge 或 单选/多选/判断\n2. C列（题干）不能为空\n3. J列（答案）不能为空")
+            error_msg = f"Excel格式错误：\n\n{str(e)}\n\n请检查：\n1. B列（题型）填写正确：single/multiple/judge 或 单选/多选/判断\n2. C列（题干）不能为空\n3. J列（答案）不能为空"
+            messagebox.showerror("导入失败", error_msg)
+            log_error(f"导入格式错误: {e}")
         except Exception as e:
-            messagebox.showerror("导入失败", f"导入失败：{str(e)}")
+            error_msg = f"导入失败：{str(e)}"
+            messagebox.showerror("导入失败", error_msg)
+            log_exception(e)
     
     def create_new_save(self):
         """创建新存档"""
